@@ -5,12 +5,19 @@
 
 using namespace std;
 
+struct arg_t {
+  char *target_str = nullptr;
+  bool opt_explain = false;
+} args;
+
 void parent(int *ifields, int *ofields, const char *str) {
   close(ifields[READ]);
   close(ofields[WRITE]);
 
   for (int i = 0; str[i] != '\0'; i++) {
-    // cout << "parent write : " << str[i] << endl;
+    if (args.opt_explain) {
+      cout << "parent write : " << str[i] << endl;
+    }
     write(ifields[WRITE], &str[i], 1);
   }
 
@@ -18,8 +25,11 @@ void parent(int *ifields, int *ofields, const char *str) {
 
   char c;
   while (read(ofields[READ], &c, 1) > 0) {
-    // cout << "parent read : " << c << endl;
-    cout << c;
+    if (args.opt_explain) {
+      cout << "parent read : " << c << endl;
+    } else {
+      cout << c;
+    }
   }
 
   close(ofields[READ]);
@@ -32,9 +42,13 @@ void child(int *ifields, int *ofields) {
 
   char c;
   while (read(ifields[READ], &c, 1) > 0) {
-    // cout << "child read : " << c << endl;
+    if (args.opt_explain) {
+      cout << "child read : " << c << endl;
+    }
     c = toupper(c);
-    // cout << "child write : " << c << endl;
+    if (args.opt_explain) {
+      cout << "child write : " << c << endl;
+    }
     write(ofields[WRITE], &c, 1);
   }
 
@@ -43,8 +57,23 @@ void child(int *ifields, int *ofields) {
 }
 
 int main(int argc, char const *argv[]) {
-  if (argc < 2) {
-    cout << "usage: ./capfork <string>" << endl;
+  for (int i = 1; i < argc; i++) {
+    const char *arg = argv[i];
+    size_t len = strlen(arg);
+    if (len >= 1 && arg[0] == '-') {
+      if (len >= 2 && arg[1] == '-') {
+        if (strcmp(&arg[2], "explain") == 0) {
+          args.opt_explain = true;
+        }
+      }
+    } else {
+      args.target_str = new char[len+1];
+      strcpy(args.target_str, arg);
+    }
+  }
+
+  if (args.target_str == nullptr) {
+    cout << "usage: ./capfork <string> [--explain]" << endl;
     exit(EXIT_FAILURE);
   }
 
@@ -69,8 +98,10 @@ int main(int argc, char const *argv[]) {
   if (pid == 0) {
     child(ifields, ofields);
   } else {
-    parent(ifields, ofields, argv[1]);
+    parent(ifields, ofields, args.target_str);
   }
+
+  delete[] args.target_str;
 
   return 0;
 }
