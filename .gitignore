@@ -1,0 +1,8 @@
+/capthread
+/capfork
+/capfork2
+Makefile
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+*.a
