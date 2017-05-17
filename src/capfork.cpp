@@ -30,7 +30,7 @@ void child(int *fields, const char *str) {
 
 int main(int argc, char const *argv[]) {
   if (argc < 2) {
-    cout << "usage: ./capfork <string>" << endl;
+    cout << "usage: " << argv[0] << " <string>" << endl;
     exit(EXIT_FAILURE);
   }
 

@@ -13,7 +13,7 @@ void capitalize(void *str_) {
 
 int main(int argc, char const *argv[]) {
   if (argc < 2) {
-    cerr << "usage: ./capthread <string>" << endl;
+    cerr << "usage: " << argv[0] << " <string>" << endl;
     exit(EXIT_FAILURE);
   }
 
